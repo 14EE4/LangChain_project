@@ -1,18 +1,9 @@
-from pathlib import Path
-
 from dotenv import load_dotenv
 from langchain_groq import ChatGroq
 
 from agent import create_email_agent
 
-
-current_dir = Path(__file__).resolve().parent
-project_root = current_dir.parent
-
-# 상위 프로젝트 폴더와 현재 폴더의 .env를 순서대로 로드한다.
-load_dotenv(project_root / ".env", override=False)
-load_dotenv(current_dir / ".env", override=False)
-
+load_dotenv()
 
 def run_demo() -> None:
     groq_llm_model = ChatGroq(
