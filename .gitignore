@@ -13,3 +13,4 @@ __pycache__/
 dist/
 build/
 *.egg
+email_agent_project/__pycache__/
