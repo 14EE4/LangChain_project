@@ -9,11 +9,10 @@ class EmailDraftInput(BaseModel):
 	sender_name: str = Field(description="보내는 사람 이름")
 	purpose: str = Field(description="이메일의 목적")
 	key_points: list[str] = Field(default_factory=list, description="본문에 반영할 핵심 포인트 목록")
-	tone: Literal["formal", "neutral", "friendly"] = Field(
-		default="formal",
+	tone: Literal["공식", "중립", "친근"] = Field(
+		default="공식",
 		description="이메일 톤"
 	)
-	language: Literal["ko", "en"] = Field(default="ko", description="이메일 언어")
 
 
 class EmailDraft(BaseModel):
@@ -32,7 +31,7 @@ class EmailDraft(BaseModel):
 
 
 class ToneRecommendation(BaseModel):
-	recommended_tone: Literal["formal", "neutral", "friendly"] = Field(description="추천 톤")
+	recommended_tone: Literal["공식", "중립", "친근"] = Field(description="추천 톤")
 	reason: str = Field(description="추천 사유")
 
 

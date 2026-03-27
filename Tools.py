@@ -8,47 +8,25 @@ from Models import DraftSendResult, EmailDraft, EmailDraftInput, ToneRecommendat
 from mock_db import get_draft, list_drafts, save_draft, save_sent
 
 
-def _build_subject(purpose: str, language: str) -> str:
-	if language == "en":
-		return f"Regarding {purpose.strip()}"
+def _build_subject(purpose: str) -> str:
 	return f"[{purpose.strip()}] 관련 문의 드립니다"
 
 
-def _build_greeting(recipient_name: str, tone: str, language: str) -> str:
-	if language == "en":
-		if tone == "friendly":
-			return f"Hi {recipient_name},"
-		return f"Dear {recipient_name},"
-
-	if tone == "friendly":
+def _build_greeting(recipient_name: str, tone: str) -> str:
+	if tone == "친근":
 		return f"{recipient_name}님 안녕하세요."
 	return f"{recipient_name}님께,"
 
 
-def _build_closing(sender_name: str, tone: str, language: str) -> str:
-	if language == "en":
-		if tone == "friendly":
-			return f"Thanks,\n{sender_name}"
-		return f"Sincerely,\n{sender_name}"
-
-	if tone == "friendly":
+def _build_closing(sender_name: str, tone: str) -> str:
+	if tone == "친근":
 		return f"감사합니다.\n{sender_name} 드림"
 	return f"검토 부탁드립니다.\n{sender_name} 드림"
 
 
 def _compose_body(request: EmailDraftInput) -> str:
-	greeting = _build_greeting(request.recipient_name, request.tone, request.language)
-	closing = _build_closing(request.sender_name, request.tone, request.language)
-
-	if request.language == "en":
-		point_lines = "\n".join([f"- {point}" for point in request.key_points]) or "- (No key points provided)"
-		return (
-			f"{greeting}\n\n"
-			f"I am reaching out regarding {request.purpose}.\n\n"
-			f"Key points:\n{point_lines}\n\n"
-			f"Please let me know if you need any additional details.\n\n"
-			f"{closing}"
-		)
+	greeting = _build_greeting(request.recipient_name, request.tone)
+	closing = _build_closing(request.sender_name, request.tone)
 
 	point_lines = "\n".join([f"- {point}" for point in request.key_points]) or "- (핵심 내용 미입력)"
 	return (
@@ -62,12 +40,12 @@ def _compose_body(request: EmailDraftInput) -> str:
 
 def _call_style_to_tone(style_request: str, current_tone: str) -> str:
 	request = style_request.lower()
-	if "친근" in style_request or "부드럽" in style_request or "friendly" in request:
-		return "friendly"
-	if "정중" in style_request or "공손" in style_request or "격식" in style_request or "formal" in request:
-		return "formal"
-	if "중립" in style_request or "neutral" in request:
-		return "neutral"
+	if "친근" in style_request or "부드럽" in style_request:
+		return "친근"
+	if "정중" in style_request or "공손" in style_request or "격식" in style_request or "공식" in style_request:
+		return "공식"
+	if "중립" in style_request:
+		return "중립"
 	return current_tone
 
 
@@ -91,16 +69,16 @@ def recommend_email_tone(
 	urgency_hint = urgency.strip().lower()
 
 	if recipient_hint in {"고객", "customer", "executive", "임원", "상사"}:
-		recommended = "formal"
+		recommended = "공식"
 		reason = "수신자가 외부 이해관계자 또는 의사결정권자이므로 격식 있는 톤이 적합합니다."
 	elif urgency_hint in {"high", "긴급", "urgent"}:
-		recommended = "formal"
+		recommended = "공식"
 		reason = "긴급 커뮤니케이션은 오해를 줄이기 위해 명확하고 정중한 톤이 유리합니다."
 	elif any(token in purpose_hint for token in ["감사", "축하", "후기", "thanks", "appreciat"]):
-		recommended = "friendly"
+		recommended = "친근"
 		reason = "관계 강화 목적이므로 친근한 톤이 효과적입니다."
 	else:
-		recommended = "neutral"
+		recommended = "중립"
 		reason = "일반 업무 커뮤니케이션에 균형 잡힌 중립 톤이 적합합니다."
 
 	return ToneRecommendation(recommended_tone=recommended, reason=reason).model_dump()
@@ -113,8 +91,7 @@ def create_email_draft(
 	sender_name: str,
 	purpose: str,
 	key_points: str = "",
-	tone: str = "formal",
-	language: str = "ko",
+	tone: str = "공식",
 ) -> dict:
 	"""이메일 초안을 생성하고 저장합니다.
 
@@ -124,8 +101,7 @@ def create_email_draft(
 		sender_name: 보내는 사람 이름
 		purpose: 이메일 목적
 		key_points: 반영할 핵심 포인트 문자열(예: "A;B;C")
-		tone: 이메일 톤(formal|neutral|friendly)
-		language: 작성 언어(ko|en)
+		tone: 이메일 톤(공식|중립|친근)
 
 	Returns:
 		생성된 이메일 초안(dict)
@@ -138,10 +114,9 @@ def create_email_draft(
 		purpose=purpose,
 		key_points=points,
 		tone=tone,
-		language=language,
 	)
 
-	subject = _build_subject(request.purpose, request.language)
+	subject = _build_subject(request.purpose)
 	body = _compose_body(request)
 
 	draft = EmailDraft(
@@ -149,7 +124,7 @@ def create_email_draft(
 		subject=subject,
 		body=body,
 		tone=request.tone,
-		language=request.language,
+		language="ko",
 		recipient_name=request.recipient_name,
 		recipient_email=request.recipient_email,
 		sender_name=request.sender_name,
@@ -184,7 +159,6 @@ def revise_email_draft(draft_id: str, revision_request: str) -> dict:
 		purpose=current["purpose"],
 		key_points=current.get("key_points", []),
 		tone=new_tone,
-		language=current["language"],
 	)
 
 	body = _compose_body(request)
@@ -196,7 +170,7 @@ def revise_email_draft(draft_id: str, revision_request: str) -> dict:
 		subject=current["subject"],
 		body=body,
 		tone=new_tone,
-		language=current["language"],
+		language="ko",
 		recipient_name=current["recipient_name"],
 		recipient_email=current["recipient_email"],
 		sender_name=current["sender_name"],
