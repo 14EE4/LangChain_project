@@ -1,0 +1,15 @@
+.env
+venv/
+fitness/
+bundle/
+*.log
+*.sqlite3
+*.pyc
+__pycache__/
+.DS_Store
+.idea/
+.vscode/
+*.egg-info/
+dist/
+build/
+*.egg
