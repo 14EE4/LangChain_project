@@ -9,22 +9,49 @@ from mock_db import get_draft, list_drafts, save_draft, save_sent
 
 
 def _build_subject(purpose: str) -> str:
+	"""이메일 제목을 생성합니다.
+	Args:
+		purpose: 이메일 목적 설명
+	Returns:
+		생성된 이메일 제목 문자열
+		
+	"""
 	return f"[{purpose.strip()}] 관련 문의 드립니다"
 
 
 def _build_greeting(recipient_name: str, tone: str) -> str:
+	"""이메일 인사를 생성합니다.
+	Args:
+		recipient_name: 받는 사람 이름
+		tone: 이메일 톤
+	Returns:
+		생성된 이메일 인사 문자열
+	"""
 	if tone == "친근":
 		return f"{recipient_name}님 안녕하세요."
 	return f"{recipient_name}님께,"
 
 
 def _build_closing(sender_name: str, tone: str) -> str:
+	"""이메일 마무리 인사를 생성합니다.
+	Args:
+		sender_name: 보내는 사람 이름
+		tone: 이메일 톤
+	Returns:
+		생성된 이메일 마무리 인사 문자열
+	"""
 	if tone == "친근":
 		return f"감사합니다.\n{sender_name} 드림"
 	return f"검토 부탁드립니다.\n{sender_name} 드림"
 
 
 def _compose_body(request: EmailDraftInput) -> str:
+	"""이메일 본문을 생성합니다.
+	Args:
+		request: 이메일 초안 생성에 필요한 입력 데이터
+	Returns:
+		생성된 이메일 본문 문자열
+	"""
 	greeting = _build_greeting(request.recipient_name, request.tone)
 	closing = _build_closing(request.sender_name, request.tone)
 
@@ -39,6 +66,13 @@ def _compose_body(request: EmailDraftInput) -> str:
 
 
 def _call_style_to_tone(style_request: str, current_tone: str) -> str:
+	"""이메일 스타일 요청을 기반으로 톤을 결정합니다.
+	Args:
+		style_request: 이메일 스타일 요청 문자열
+		current_tone: 현재 톤
+	Returns:
+		결정된 이메일 톤
+	"""
 	request = style_request.lower()
 	if "친근" in style_request or "부드럽" in style_request:
 		return "친근"
@@ -50,6 +84,14 @@ def _call_style_to_tone(style_request: str, current_tone: str) -> str:
 
 
 def _extract_extra_line(style_request: str) -> str | None:
+	"""
+	스타일 요청에서 추가로 포함할 문장을 추출합니다.
+	예시: "톤은 친근하게, 추가: 그리고 다음 주 미팅 일정도 알려주세요."
+	Args:
+		style_request: 이메일 스타일 요청 문자열
+	Returns:
+		추출된 추가 문장 또는 None
+	"""
 	for marker in ["추가:", "add:"]:
 		if marker in style_request:
 			line = style_request.split(marker, 1)[1].strip()

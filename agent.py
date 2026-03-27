@@ -28,7 +28,14 @@ from Tools import (
 
 
 def create_email_agent(llm, verbose: bool = False):
-	"""LangChain 1.x 기반 이메일 에이전트를 생성한다."""
+	"""LangChain 1.x 기반 이메일 에이전트를 생성한다.
+	Args:
+		llm: 언어 모델 인스턴스 (예: ChatGroq)
+		verbose: 디버그 모드 활성화 여부
+	Returns:
+		생성된 에이전트 인스턴스
+	
+	"""
 	tools = [
 		recommend_email_tone,
 		create_email_draft,
