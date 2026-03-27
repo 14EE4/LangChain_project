@@ -13,6 +13,14 @@ def run_demo() -> None:
     agent = create_email_agent(llm=groq_llm_model, verbose=False)
 
     print("이메일 에이전트 시작. 종료하려면 exit 입력")
+    print("시작할 때 아래 정보를 알려주면 빠르게 초안을 만들 수 있습니다:")
+    print("- 수신자 이름")
+    print("- 수신자 이메일")
+    print("- 목적")
+    print("- 보내는 사람 이름")
+    print("- 핵심 포인트(선택, 세미콜론 ';'로 구분)")
+    print("- 톤(선택: formal/neutral/friendly)")
+    print("- 언어(선택: ko/en)")
     messages = []
 
     while True:

@@ -2,15 +2,10 @@
 
 from uuid import uuid4
 
+from langchain_core.tools import tool
+
 from Models import DraftSendResult, EmailDraft, EmailDraftInput, ToneRecommendation
 from mock_db import get_draft, list_drafts, save_draft, save_sent
-
-try:
-	from langchain_core.tools import tool
-except ImportError:
-	# langchain 없이도 함수형으로 실행 가능하도록 동일한 인터페이스를 흉내낸다.
-	def tool(func):
-		return func
 
 
 def _build_subject(purpose: str, language: str) -> str:
