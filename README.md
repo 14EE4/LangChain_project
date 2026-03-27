@@ -10,6 +10,14 @@
 - 최근 초안 조회
 - 모의 발송 처리
 
+## Tool 기능
+
+- recommend_email_tone: 수신자 유형/목적/긴급도를 기반으로 톤(공식/중립/친근) 추천
+- create_email_draft: 이메일 초안 생성 후 저장
+- revise_email_draft: 기존 초안을 수정 요청에 맞게 재작성하여 새 초안으로 저장
+- get_saved_email_drafts: 최근 저장 초안 목록 조회
+- send_email_draft: 초안을 발송 상태로 변경(모의 발송)
+
 ## 프로젝트 구조
 
 - app.py: CLI 실행 진입점
